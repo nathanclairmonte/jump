@@ -66,8 +66,8 @@ task format         # biome format --write
 bun run test        # vitest
 ```
 
-`task bump` bumps `package.json` (the sole version source); CI derives the release tag
-from it on merge to main.
+`task bump` updates `package.json`, the sole version source. Release candidates require
+manual dispatch on main. See [release verification and draft staging](docs/releasing.md).
 
 ### Packaged licenses
 

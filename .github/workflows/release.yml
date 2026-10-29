@@ -1,170 +1,138 @@
-name: Release
+name: Release candidate
 
-# version-gated release on merge to main. package.json is the single source of truth:
-# CI reads its version and skips only when a matching published release already exists.
-# a draft for the same version is retried from its original tag.
-# bumping the version in a PR (via `task bump`) is what triggers a release on merge;
-# merging anything else is a silent no-op. no manual git tagging, nothing to keep in sync.
-#
-# auto-release is live: pushing a version bump to main publishes a release.
-# workflow_dispatch is kept as a manual escape hatch for rebuilding one or both artifacts.
 on:
   workflow_dispatch:
     inputs:
-      platform:
-        description: Artifact to rebuild when repairing a release
-        type: choice
+      confirm_version:
+        description: Exact package.json version to verify
+        type: string
         required: true
-        default: all
-        options:
-          - all
-          - windows
-          - macos
-  push:
-    branches: [main]
+      stage_draft:
+        description: Stage both verified installers into a new or empty draft
+        type: boolean
+        default: false
 
-# the built-in token needs write access to create releases and tags.
 permissions:
-  contents: write
+  contents: read
 
-# never let two pushes to main publish at the same time.
 concurrency:
-  group: release-${{ github.ref }}
+  group: jump-release
   cancel-in-progress: false
 
 jobs:
-  # decide whether to publish and create the draft release once, before the two platform
-  # jobs upload into it. manual dispatch also repairs a partial release.
   prepare:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      release_state: ${{ steps.release.outputs.release_state }}
-      should_build: ${{ steps.release.outputs.should_build }}
-      build_ref: ${{ steps.release.outputs.build_ref }}
-      matrix: ${{ steps.builds.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Read version from package.json
-        id: version
-        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
-
-      - name: Inspect release state
-        id: release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if is_draft=$(gh release view "v${{ steps.version.outputs.version }}" --json isDraft --jq '.isDraft' 2>/dev/null); then
-            if [[ "$is_draft" == "true" ]]; then
-              release_state=draft
-            else
-              release_state=published
-            fi
-            build_ref="v${{ steps.version.outputs.version }}"
-          else
-            release_state=missing
-            build_ref="${{ github.sha }}"
-          fi
-
-          if [[ "$release_state" == "published" && "${{ github.event_name }}" != "workflow_dispatch" ]]; then
-            should_build=false
-          else
-            should_build=true
-          fi
-
-          echo "release_state=$release_state" >> "$GITHUB_OUTPUT"
-          echo "should_build=$should_build" >> "$GITHUB_OUTPUT"
-          echo "build_ref=$build_ref" >> "$GITHUB_OUTPUT"
-          echo "release state: $release_state; build ref: $build_ref; should build: $should_build"
-
-      - name: Select platform builds
-        id: builds
-        env:
-          REQUESTED_PLATFORM: ${{ inputs.platform || 'all' }}
-        run: |
-          case "$REQUESTED_PLATFORM" in
-            windows)
-              matrix='{"include":[{"os":"windows-latest","bundles":"nsis","artifacts":"src-tauri/target/release/bundle/nsis/*-setup.exe"}]}'
-              ;;
-            macos)
-              matrix='{"include":[{"os":"macos-latest","bundles":"dmg","artifacts":"src-tauri/target/release/bundle/dmg/*.dmg"}]}'
-              ;;
-            all)
-              matrix='{"include":[{"os":"windows-latest","bundles":"nsis","artifacts":"src-tauri/target/release/bundle/nsis/*-setup.exe"},{"os":"macos-latest","bundles":"dmg","artifacts":"src-tauri/target/release/bundle/dmg/*.dmg"}]}'
-              ;;
-          esac
-          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
-
-      - name: Create the release
-        if: steps.release.outputs.release_state == 'missing'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "v${{ steps.version.outputs.version }}" \
-            --title "v${{ steps.version.outputs.version }}" \
-            --generate-notes \
-            --target "${{ github.sha }}" \
-            --draft
-
-  # each native runner packages its own artifact. either platform can still ship if the
-  # other fails, and a manual rerun replaces any artifact that already uploaded.
-  build:
-    needs: prepare
-    if: needs.prepare.outputs.should_build == 'true'
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ needs.prepare.outputs.build_ref }}
+          ref: ${{ github.sha }}
+      - name: Check deliberate version and immutable release state
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONFIRM_VERSION: ${{ inputs.confirm_version }}
+        run: python3 scripts/release.py preflight --sha "$GITHUB_SHA" --confirm-version "$CONFIRM_VERSION"
 
-      - uses: oven-sh/setup-bun@v2
+  macos:
+    needs: prepare
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
         with:
           bun-version: 1.3.14
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - uses: swatinem/rust-cache@v2
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
         with:
-          workspaces: src-tauri
-
-      - name: Cache bun dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-          restore-keys: bun-${{ runner.os }}-
-
+          toolchain: stable
+          targets: aarch64-apple-darwin
       - name: Install dependencies
         run: bun install --frozen-lockfile
-
-      - name: Build and package
-        run: bun run tauri build --bundles ${{ matrix.bundles }}
-
-      - name: Upload bundle to release
-        shell: bash
+      - name: Import the existing authorized signing identity
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload "v${{ needs.prepare.outputs.version }}" ${{ matrix.artifacts }} --clobber
+          APPLE_DEVELOPER_ID_P12_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_P12_BASE64 }}
+          APPLE_DEVELOPER_ID_P12_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_P12_PASSWORD }}
+          APPLE_DEVELOPER_ID: ${{ secrets.APPLE_DEVELOPER_ID }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: sh scripts/prepare-signing.sh
+      - name: Sign, notarize, and verify the final native package
+        env:
+          APPLE_DEVELOPER_ID: ${{ secrets.APPLE_DEVELOPER_ID }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: python3 scripts/release_macos.py build --sha "$GITHUB_SHA" --output "$RUNNER_TEMP/macos"
+      - name: Remove the temporary signing identity
+        if: always()
+        run: sh scripts/cleanup-signing.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: macos
+          path: ${{ runner.temp }}/macos/
+          if-no-files-found: error
+          retention-days: 7
 
-  # publish after the matrix even when one leg fails, but never expose an empty release.
-  publish:
-    needs: [prepare, build]
-    if: ${{ !cancelled() && needs.prepare.result == 'success' && needs.prepare.outputs.should_build == 'true' }}
+  windows:
+    needs: prepare
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version: 1.3.14
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          toolchain: stable
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build the unsigned NSIS installer
+        run: bun run tauri build --bundles nsis
+      - name: Record the exact Windows installer
+        run: python scripts/release.py record-windows --sha "$GITHUB_SHA" --artifacts "$RUNNER_TEMP/windows"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: windows
+          path: ${{ runner.temp }}/windows/
+          if-no-files-found: error
+          retention-days: 7
+
+  verify:
+    needs: [prepare, macos, windows]
     runs-on: ubuntu-latest
     steps:
-      - name: Publish release when an artifact exists
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          path: release-artifacts
+          pattern: '*'
+      - name: Check the exact artifact set and verification evidence
+        run: python3 scripts/release.py verify-artifacts --sha "$GITHUB_SHA" --artifacts release-artifacts
+
+  stage:
+    needs: [prepare, macos, windows, verify]
+    if: inputs.stage_draft
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          path: release-artifacts
+          pattern: '*'
+      - name: Recheck state and stage both installers without replacement
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          asset_count=$(gh release view "v${{ needs.prepare.outputs.version }}" --json assets --jq '.assets | length')
-          if [[ "$asset_count" -eq 0 ]]; then
-            echo "release has no artifacts; refusing to publish."
-            exit 1
-          fi
-          gh release edit "v${{ needs.prepare.outputs.version }}" --draft=false
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/release.py stage --sha "$GITHUB_SHA" --artifacts release-artifacts

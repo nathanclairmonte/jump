@@ -12,3 +12,4 @@ dist-ssr
 src-tauri/target/
 src-tauri/gen/
 *.log
+__pycache__/

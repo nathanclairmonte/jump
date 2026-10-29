@@ -1,0 +1,28 @@
+name: PR / release tooling
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/release.yml'
+      - '.github/workflows/pr-release.yml'
+      - 'scripts/**'
+      - 'docs/releasing.md'
+      - 'package.json'
+      - 'src-tauri/tauri.conf.json'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Test release safety boundaries
+        run: python3 -m unittest discover -s scripts/tests -v
+      - name: Check signing shell scripts
+        run: shellcheck scripts/prepare-signing.sh scripts/cleanup-signing.sh
+      - uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7
+        with:
+          files: '.github/workflows/release.yml, .github/workflows/pr-release.yml'
