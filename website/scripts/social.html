@@ -16,80 +16,110 @@
         margin: 0;
         width: 1200px;
         height: 630px;
-        background: #12110f;
-        color: #f6f4f0;
+        background: #141210;
+        color: #f6f2ec;
         font-family: "Geist Variable", sans-serif;
-        overflow: hidden;
       }
       .canvas {
         height: 100%;
-        position: relative;
-        padding: 52px 64px;
-        background: radial-gradient(
-          ellipse at 90% 70%,
-          #67331e35,
-          transparent 65%
-        );
+        display: grid;
+        grid-template-columns: 430px minmax(0, 1fr);
+        gap: 38px;
+        align-items: center;
+        padding: 64px;
       }
       .brand {
         display: flex;
         align-items: center;
-        gap: 12px;
-        font-size: 30px;
-        font-weight: 600;
-        letter-spacing: -1px;
+        gap: 14px;
       }
       .brand img {
-        width: 44px;
-        height: 44px;
-      }
-      .label {
-        margin-top: 63px;
-        color: #aaa69f;
-        font-size: 12px;
-        letter-spacing: 2px;
+        width: 68px;
+        height: 68px;
       }
       h1 {
-        font-size: 67px;
+        font-size: 76px;
         line-height: 1.05;
-        letter-spacing: -3px;
-        font-weight: 500;
-        margin: 20px 0;
+        font-weight: 650;
+        letter-spacing: -2.2px;
+        margin: 0;
       }
-      h1 span {
-        color: #ff7a45;
+      .lead {
+        max-width: 390px;
+        margin: 30px 0 16px;
+        font-size: 29px;
+        line-height: 1.4;
+        letter-spacing: -0.5px;
+      }
+      .description {
+        max-width: 360px;
+        margin: 0;
+        color: #b3aaa0;
+        font-size: 18px;
+        line-height: 1.6;
+      }
+      .shortcut {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 28px;
+        color: #b3aaa0;
+        font-size: 13px;
+      }
+      .shortcut span {
+        margin-right: 4px;
+      }
+      kbd {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        min-width: 38px;
+        padding: 0 9px;
+        border: 1px solid #5b5147;
+        border-bottom: 2px solid #64574b;
+        border-radius: 6px;
+        background: #302923;
+        color: #e7e0d8;
+        font:
+          400 12px ui-monospace,
+          monospace;
+      }
+      .space-key {
+        min-width: 86px;
       }
       .capture {
-        position: absolute;
-        left: 657px;
-        top: 178px;
-        width: 602px;
-        transform: rotate(-4deg);
-        border-radius: 15px;
-        box-shadow: 0 30px 90px #0008;
-      }
-      .bottom {
-        position: absolute;
-        left: 64px;
-        bottom: 49px;
-        color: #aaa69f;
-        font-size: 16px;
-      }
-      .bottom span {
-        color: #ff7a45;
-        margin-inline: 12px;
+        display: block;
+        width: 100%;
+        height: auto;
+        filter: drop-shadow(0 18px 20px #0005);
       }
     </style>
   </head>
   <body>
     <div class="canvas">
-      <div class="brand"><img src="{{ICON}}" alt="" />jump</div>
-      <div class="label">A LAUNCHER FOR YOUR DEVELOPER PROJECTS</div>
-      <h1>
-        Your next project.<br /><span>One shortcut<br />away.</span>
-      </h1>
-      <img class="capture" src="{{LAUNCHER}}" alt="" />
-      <div class="bottom">macOS <span>/</span> Windows + WSL2</div>
+      <div>
+        <div class="brand">
+          <img src="{{ICON}}" alt="" />
+          <h1>Jump</h1>
+        </div>
+        <p class="lead">Open projects in VS Code, Cursor, or Zed.</p>
+        <p class="description">
+          Type a project name and press Enter. Jump finds projects in your
+          folders, including WSL.
+        </p>
+        <div class="shortcut">
+          <span>Open Jump with</span><kbd>Ctrl</kbd><kbd>Alt</kbd
+          ><kbd class="space-key">Space</kbd>
+        </div>
+      </div>
+      <img
+        class="capture"
+        src="{{LAUNCHER}}"
+        width="1200"
+        height="876"
+        alt="Jump showing pinned projects and recently opened projects"
+      />
     </div>
   </body>
 </html>
