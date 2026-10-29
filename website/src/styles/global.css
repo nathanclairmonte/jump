@@ -258,6 +258,9 @@ h3 {
 .information-content article {
   margin-top: 24px;
 }
+.information-content > p + p {
+  margin-top: 16px;
+}
 .information-content article:first-of-type {
   margin-top: 0;
 }
