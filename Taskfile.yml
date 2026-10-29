@@ -21,8 +21,7 @@ tasks:
 
   bump:
     desc: Bump the app version in package.json (patch|minor|major, defaults to patch)
-    # --no-git-tag-version edits package.json only. the version change rides in the PR,
-    # and CI derives the release tag from package.json on merge, so we never tag locally.
+    # release tags belong to the draft staging workflow, so version bumps must not tag locally
     cmds:
       - bun pm version {{.CLI_ARGS | default "patch"}} --no-git-tag-version
 
