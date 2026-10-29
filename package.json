@@ -1,0 +1,62 @@
+{
+	"name": "jump",
+	"description": "A fast desktop launcher for opening developer projects on macOS and Windows, including WSL2.",
+	"author": "Nathan Clairmonte",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nathanclairmonte/jump.git"
+	},
+	"bugs": "https://github.com/nathanclairmonte/jump/issues",
+	"version": "0.1.3",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc --noEmit && vite build",
+		"preview": "vite preview",
+		"test": "vitest run",
+		"format": "biome format",
+		"lint": "biome lint",
+		"check": "biome check",
+		"tauri": "tauri"
+	},
+	"dependencies": {
+		"@dnd-kit/core": "^6.3.1",
+		"@dnd-kit/sortable": "^10.0.0",
+		"@fontsource-variable/geist": "^5.2.8",
+		"@fontsource-variable/geist-mono": "^5.2.8",
+		"@leeoniya/ufuzzy": "^1.0.19",
+		"@radix-ui/react-slot": "^1.2.3",
+		"@tauri-apps/api": "^2.11.0",
+		"@tauri-apps/plugin-autostart": "^2.5.1",
+		"@tauri-apps/plugin-dialog": "^2.7.1",
+		"@tauri-apps/plugin-global-shortcut": "^2.3.2",
+		"@tauri-apps/plugin-opener": "^2.5.4",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.476.0",
+		"motion": "^12.40.0",
+		"radix-ui": "^1.5.0",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"sonner": "^2.0.7",
+		"tailwind-merge": "^3.0.2",
+		"zustand": "^5.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.0.0",
+		"@tailwindcss/vite": "^4.0.0",
+		"@tauri-apps/cli": "^2.11.0",
+		"@types/node": "^24.0.0",
+		"@types/react": "^19.0.0",
+		"@types/react-dom": "^19.0.0",
+		"@vitejs/plugin-react": "^5.0.0",
+		"jsdom": "^26.0.0",
+		"tailwindcss": "^4.0.0",
+		"tw-animate-css": "^1.0.0",
+		"typescript": "^5.7.0",
+		"vite": "^7.0.0",
+		"vitest": "^3.0.0"
+	}
+}

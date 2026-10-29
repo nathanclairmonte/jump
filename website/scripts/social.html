@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Jump social image</title>
+    <style>
+      @font-face {
+        font-family: "Geist Variable";
+        font-weight: 100 900;
+        src: url("{{FONT}}") format("woff2");
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        background: #12110f;
+        color: #f6f4f0;
+        font-family: "Geist Variable", sans-serif;
+        overflow: hidden;
+      }
+      .canvas {
+        height: 100%;
+        position: relative;
+        padding: 52px 64px;
+        background: radial-gradient(
+          ellipse at 90% 70%,
+          #67331e35,
+          transparent 65%
+        );
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 30px;
+        font-weight: 600;
+        letter-spacing: -1px;
+      }
+      .brand img {
+        width: 44px;
+        height: 44px;
+      }
+      .label {
+        margin-top: 63px;
+        color: #aaa69f;
+        font-size: 12px;
+        letter-spacing: 2px;
+      }
+      h1 {
+        font-size: 67px;
+        line-height: 1.05;
+        letter-spacing: -3px;
+        font-weight: 500;
+        margin: 20px 0;
+      }
+      h1 span {
+        color: #ff7a45;
+      }
+      .capture {
+        position: absolute;
+        left: 657px;
+        top: 178px;
+        width: 602px;
+        transform: rotate(-4deg);
+        border-radius: 15px;
+        box-shadow: 0 30px 90px #0008;
+      }
+      .bottom {
+        position: absolute;
+        left: 64px;
+        bottom: 49px;
+        color: #aaa69f;
+        font-size: 16px;
+      }
+      .bottom span {
+        color: #ff7a45;
+        margin-inline: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="canvas">
+      <div class="brand"><img src="{{ICON}}" alt="" />jump</div>
+      <div class="label">A LAUNCHER FOR YOUR DEVELOPER PROJECTS</div>
+      <h1>
+        Your next project.<br /><span>One shortcut<br />away.</span>
+      </h1>
+      <img class="capture" src="{{LAUNCHER}}" alt="" />
+      <div class="bottom">macOS <span>/</span> Windows + WSL2</div>
+    </div>
+  </body>
+</html>

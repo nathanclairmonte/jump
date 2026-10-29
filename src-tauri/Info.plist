@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>LSUIElement</key>
+  <true/>
+  <key>NSDesktopFolderUsageDescription</key>
+  <string>Jump needs access to scan this folder for developer projects.</string>
+  <key>NSDocumentsFolderUsageDescription</key>
+  <string>Jump needs access to scan this folder for developer projects.</string>
+  <key>NSDownloadsFolderUsageDescription</key>
+  <string>Jump needs access to scan this folder for developer projects.</string>
+  <key>NSFileProviderDomainUsageDescription</key>
+  <string>Jump needs access to scan this folder for developer projects.</string>
+  <key>NSNetworkVolumesUsageDescription</key>
+  <string>Jump needs access to scan this folder for developer projects.</string>
+  <key>NSRemovableVolumesUsageDescription</key>
+  <string>Jump needs access to scan this folder for developer projects.</string>
+</dict>
+</plist>

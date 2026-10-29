@@ -1,0 +1,7 @@
+# normalise line endings to LF in the repo so the windows build checkout does
+# not show CRLF churn on every dev run (we edit on WSL, build/run on windows).
+* text=auto eol=lf
+
+# generated files: mark so diffs collapse in review and line endings stay LF.
+bun.lock linguist-generated
+src-tauri/Cargo.lock linguist-generated

@@ -1,0 +1,20 @@
+[package]
+name = "jump-core"
+version = "0.1.0"
+description = "Pure, tauri-independent domain logic for Jump: platform rules, persistence, editor commands, and project scanning."
+authors = ["Nathan Clairmonte"]
+license = "MIT"
+repository = "https://github.com/nathanclairmonte/jump"
+edition = "2021"
+
+[lib]
+name = "jump_core"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# deterministic project/location ids: a stable content hash of the identity tuple,
+# so pins/recents/overrides keyed by id survive a rescan.
+blake3 = "1"
+thiserror = "2"
+tracing = "0.1"

@@ -1,0 +1,14 @@
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+.env
+.env.*
+!.env.example
+.claude/
+
+# tauri rust build artifacts (also covered by src-tauri/.gitignore)
+src-tauri/target/
+src-tauri/gen/
+*.log

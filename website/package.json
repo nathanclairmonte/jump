@@ -1,0 +1,39 @@
+{
+  "name": "jump-website",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "check": "astro check",
+    "test": "node --test src/lib/*.test.mjs",
+    "preview": "node scripts/preview.mjs",
+    "capture": "node scripts/capture.mjs",
+    "format": "prettier --write .",
+    "verify-ui": "node scripts/verify.mjs"
+  },
+  "dependencies": {
+    "@astrojs/vercel": "^11.0.11",
+    "@fontsource-variable/geist": "^5.2.8",
+    "@fontsource-variable/geist-mono": "^5.2.8",
+    "astro": "^7.3.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "prettier": "^3.9.9",
+    "prettier-plugin-astro": "^1.1.0",
+    "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "@vercel/cli-config": {
+      "zod": "^4.6.6"
+    },
+    "@vercel/routing-utils": {
+      "path-to-regexp": "^6.3.0"
+    }
+  },
+  "license": "MIT"
+}

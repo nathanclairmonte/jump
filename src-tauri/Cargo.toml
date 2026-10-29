@@ -1,0 +1,56 @@
+[package]
+name = "jump"
+version = "0.1.0"
+description = "A fast desktop launcher for opening developer projects on macOS and Windows, including WSL2."
+authors = ["Nathan Clairmonte"]
+license = "MIT"
+repository = "https://github.com/nathanclairmonte/jump"
+edition = "2021"
+
+# the pure, tauri-independent domain logic lives in jump-core so both platforms' rules
+# can be unit-tested on either host without the tauri webview stack.
+[workspace]
+members = ["crates/core"]
+
+# the library holds run(), called by both the desktop binary and any future mobile
+# entry point. mirrors the standard tauri v2 layout.
+[lib]
+name = "jump_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# tray-icon: the app lives in the system tray. image-png: load the caret tray icon
+# from a bundled png at runtime. macos-private-api: gates transparent windows on macos
+# (the config flag alone isn't enough; the build script checks the feature is present).
+# it's a no-op on windows.
+tauri = { version = "2", features = ["tray-icon", "image-png", "macos-private-api"] }
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-single-instance = "2"
+tauri-plugin-autostart = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+jump-core = { path = "crates/core" }
+
+# a native error dialog for fatal pre-launch failures (config dir unresolvable), before the
+# tauri app (and thus its dialog plugin) exists. windows only: a release build there has no
+# console (windows_subsystem = "windows"), and rfd's win32 backend works before any app object.
+# macos uses osascript instead, which needs no dependency and no NSApplication this early.
+[target.'cfg(windows)'.dependencies]
+rfd = "0.16"
+
+# the public all-workspaces API does not cross app-owned fullscreen Spaces, so the launcher
+# augments Tauri's flags with the two AppKit collection behaviours verified on-machine.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6.4"
+objc2-app-kit = { version = "0.3.2", default-features = false, features = [
+    "NSApplication",
+    "NSWindow",
+] }

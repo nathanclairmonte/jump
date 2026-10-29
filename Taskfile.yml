@@ -1,0 +1,66 @@
+# https://taskfile.dev
+version: "3"
+
+tasks:
+  dev-web:
+    desc: Run the marketing website with hot reload
+    cmds:
+      - npm run dev --prefix website
+
+  check-web:
+    desc: Check, test, and build the marketing website
+    cmds:
+      - npm run check --prefix website
+      - npm test --prefix website
+      - npm run build --prefix website
+
+  preview-web:
+    desc: Preview the built marketing website and download routes
+    cmds:
+      - npm run preview --prefix website
+
+  bump:
+    desc: Bump the app version in package.json (patch|minor|major, defaults to patch)
+    # --no-git-tag-version edits package.json only. the version change rides in the PR,
+    # and CI derives the release tag from package.json on merge, so we never tag locally.
+    cmds:
+      - bun pm version {{.CLI_ARGS | default "patch"}} --no-git-tag-version
+
+  tauri:dev:
+    desc: Run the full Tauri dev loop (hot-reload frontend + rust shell)
+    # run on native macOS or Windows; WSL interop breaks the dev server and file watching.
+    cmds:
+      - bun run tauri dev
+
+  build:win:
+    desc: Build the Windows NSIS installer locally into src-tauri/target/release/bundle/nsis/
+    # cross-compiling a Tauri installer cannot exercise the target host's webview packaging.
+    cmds:
+      - bun run tauri build --bundles nsis
+
+  build:mac:
+    desc: Build the macOS DMG locally into src-tauri/target/release/bundle/dmg/
+    # dmg creation depends on native macOS disk-image tools.
+    cmds:
+      - bun run tauri build --bundles dmg
+
+  mac:unq:
+    desc: Clear Gatekeeper quarantine on the installed macOS app
+    # unsigned downloads are quarantined per install, so every replacement needs clearing.
+    cmds:
+      - xattr -cr {{.CLI_ARGS | default "/Applications/Jump.app"}}
+
+  check:
+    desc: Biome check (lint + format + import sort), report only
+    cmds:
+      - bun run check
+
+  lint:
+    desc: Biome lint
+    cmds:
+      - bun run lint
+
+  format:
+    desc: Biome format (writes changes)
+    cmds:
+      - bun run format --write

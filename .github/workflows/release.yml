@@ -1,0 +1,170 @@
+name: Release
+
+# version-gated release on merge to main. package.json is the single source of truth:
+# CI reads its version and skips only when a matching published release already exists.
+# a draft for the same version is retried from its original tag.
+# bumping the version in a PR (via `task bump`) is what triggers a release on merge;
+# merging anything else is a silent no-op. no manual git tagging, nothing to keep in sync.
+#
+# auto-release is live: pushing a version bump to main publishes a release.
+# workflow_dispatch is kept as a manual escape hatch for rebuilding one or both artifacts.
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Artifact to rebuild when repairing a release
+        type: choice
+        required: true
+        default: all
+        options:
+          - all
+          - windows
+          - macos
+  push:
+    branches: [main]
+
+# the built-in token needs write access to create releases and tags.
+permissions:
+  contents: write
+
+# never let two pushes to main publish at the same time.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # decide whether to publish and create the draft release once, before the two platform
+  # jobs upload into it. manual dispatch also repairs a partial release.
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release_state: ${{ steps.release.outputs.release_state }}
+      should_build: ${{ steps.release.outputs.should_build }}
+      build_ref: ${{ steps.release.outputs.build_ref }}
+      matrix: ${{ steps.builds.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version from package.json
+        id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Inspect release state
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if is_draft=$(gh release view "v${{ steps.version.outputs.version }}" --json isDraft --jq '.isDraft' 2>/dev/null); then
+            if [[ "$is_draft" == "true" ]]; then
+              release_state=draft
+            else
+              release_state=published
+            fi
+            build_ref="v${{ steps.version.outputs.version }}"
+          else
+            release_state=missing
+            build_ref="${{ github.sha }}"
+          fi
+
+          if [[ "$release_state" == "published" && "${{ github.event_name }}" != "workflow_dispatch" ]]; then
+            should_build=false
+          else
+            should_build=true
+          fi
+
+          echo "release_state=$release_state" >> "$GITHUB_OUTPUT"
+          echo "should_build=$should_build" >> "$GITHUB_OUTPUT"
+          echo "build_ref=$build_ref" >> "$GITHUB_OUTPUT"
+          echo "release state: $release_state; build ref: $build_ref; should build: $should_build"
+
+      - name: Select platform builds
+        id: builds
+        env:
+          REQUESTED_PLATFORM: ${{ inputs.platform || 'all' }}
+        run: |
+          case "$REQUESTED_PLATFORM" in
+            windows)
+              matrix='{"include":[{"os":"windows-latest","bundles":"nsis","artifacts":"src-tauri/target/release/bundle/nsis/*-setup.exe"}]}'
+              ;;
+            macos)
+              matrix='{"include":[{"os":"macos-latest","bundles":"dmg","artifacts":"src-tauri/target/release/bundle/dmg/*.dmg"}]}'
+              ;;
+            all)
+              matrix='{"include":[{"os":"windows-latest","bundles":"nsis","artifacts":"src-tauri/target/release/bundle/nsis/*-setup.exe"},{"os":"macos-latest","bundles":"dmg","artifacts":"src-tauri/target/release/bundle/dmg/*.dmg"}]}'
+              ;;
+          esac
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+      - name: Create the release
+        if: steps.release.outputs.release_state == 'missing'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.version.outputs.version }}" \
+            --title "v${{ steps.version.outputs.version }}" \
+            --generate-notes \
+            --target "${{ github.sha }}" \
+            --draft
+
+  # each native runner packages its own artifact. either platform can still ship if the
+  # other fails, and a manual rerun replaces any artifact that already uploaded.
+  build:
+    needs: prepare
+    if: needs.prepare.outputs.should_build == 'true'
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.build_ref }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build and package
+        run: bun run tauri build --bundles ${{ matrix.bundles }}
+
+      - name: Upload bundle to release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "v${{ needs.prepare.outputs.version }}" ${{ matrix.artifacts }} --clobber
+
+  # publish after the matrix even when one leg fails, but never expose an empty release.
+  publish:
+    needs: [prepare, build]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && needs.prepare.outputs.should_build == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish release when an artifact exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          asset_count=$(gh release view "v${{ needs.prepare.outputs.version }}" --json assets --jq '.assets | length')
+          if [[ "$asset_count" -eq 0 ]]; then
+            echo "release has no artifacts; refusing to publish."
+            exit 1
+          fi
+          gh release edit "v${{ needs.prepare.outputs.version }}" --draft=false

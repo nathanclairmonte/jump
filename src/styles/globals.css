@@ -1,0 +1,213 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* launcher indexing indicator: a pulsing dot in the header + a shimmer line sliding
+   under it. kept subtle so the cached list stays the focus while a scan refreshes. */
+@keyframes jmp-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.3;
+	}
+}
+@keyframes jmp-shimmer {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(100%);
+	}
+}
+
+/* dark-only in v0: the design ships only dark tokens, so the dark class is hard-set
+   on <html> and never toggled. this custom-variant keeps shadcn's `dark:` utilities
+   working for any component that reaches for them. */
+@custom-variant dark (&:is(.dark *));
+
+/* shadcn semantic tokens, mapped once to the warm-neutral dark palette. these back
+   the components pulled in via `shadcn add` later; jump's own tokens live
+   in the @theme block below. dark-only, so the values sit directly on :root. */
+:root {
+	--radius: 0.625rem;
+	--background: #161412;
+	--foreground: #f6f4f0;
+	--card: #1b1816;
+	--card-foreground: #f6f4f0;
+	--popover: #221f1c;
+	--popover-foreground: #f6f4f0;
+	--primary: #ff7a45;
+	--primary-foreground: #211510;
+	--secondary: #2e2a25;
+	--secondary-foreground: #ececea;
+	--muted: #221f1c;
+	--muted-foreground: #9c9a94;
+	--accent: #221f1c;
+	--accent-foreground: #f6f4f0;
+	--destructive: #d8504a;
+	--border: rgba(255, 255, 255, 0.08);
+	--input: rgba(255, 255, 255, 0.09);
+	--ring: #ff7a45;
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+}
+
+/* jump design tokens, taken verbatim from the design spec. encoded here as
+   first-class tailwind utilities (bg-panel, text-accent, rounded-row, etc.) so the
+   palette is self-documenting and the "orange is a spark" rule is enforceable. */
+@theme {
+	--font-sans: "Geist Variable", system-ui, sans-serif;
+	--font-mono: "Geist Mono Variable", ui-monospace, monospace;
+
+	/* surfaces (warm-neutral dark) */
+	--color-base-start: #0e0d0c;
+	--color-base-end: #141312;
+	--color-panel: rgba(23, 21, 19, 0.94);
+	--color-window: #161412;
+	--color-titlebar: #1b1816;
+	--color-sidebar: #141210;
+	--color-elevated: #221f1c;
+	--color-segment: #2e2a25;
+
+	/* lines & states (white overlays) */
+	--color-hairline: rgba(255, 255, 255, 0.08);
+	--color-row-hover: rgba(255, 255, 255, 0.04);
+	--color-selection: rgba(255, 255, 255, 0.06);
+	--color-selection-ring: rgba(255, 255, 255, 0.09);
+	/* zebra stripe on the projects table: half-strength of row-hover so the stripe sits
+	   below hover/selection in the visual order (0.022 < 0.04 < 0.06). */
+	--color-row-alt: rgba(255, 255, 255, 0.022);
+
+	/* text */
+	--color-ink: #f6f4f0;
+	--color-ink-body: #ececea;
+	--color-ink-secondary: #9c9a94;
+	--color-ink-tertiary: #7a7872;
+	--color-ink-path: #7d7b75;
+	--color-ink-faint: #6f6d67;
+
+	/* accent (the brand spark, used sparingly) */
+	--color-accent-orange: #ff7a45;
+	--color-accent-orange-hover: #ff8a5a;
+	--color-accent-soft: #ff9d72;
+	--color-on-accent: #211510;
+
+	/* environment badges */
+	--color-wsl: #9b8cf0;
+	--color-wsl-text: #b9adf6;
+	--color-wsl-bg: rgba(155, 140, 240, 0.16);
+	--color-windows: #4a9eea;
+	--color-windows-text: #82c0f5;
+	--color-windows-bg: rgba(74, 158, 234, 0.18);
+
+	/* semantic chips */
+	--color-success: #54ca7e;
+	--color-success-bg: rgba(46, 190, 110, 0.14);
+	--color-success-border: rgba(46, 190, 110, 0.26);
+	--color-warning: #d8a85a;
+	--color-warning-bg: rgba(212, 168, 90, 0.12);
+	--color-warning-border: rgba(212, 168, 90, 0.24);
+	--color-danger: #d8504a;
+	--color-danger-text: #eab4ac;
+	--color-danger-bg: rgba(216, 80, 74, 0.08);
+	--color-danger-border: rgba(216, 80, 74, 0.28);
+
+	/* user-assignable project spine colors */
+	--color-project-teal: #5fb3a1;
+	--color-project-amber: #d4a85a;
+	--color-project-rose: #d98aa8;
+	--color-project-green: #74b88a;
+
+	/* radii */
+	--radius-panel: 15px;
+	--radius-window: 13px;
+	--radius-row: 10px;
+	--radius-card: 12px;
+	--radius-button: 9px;
+	--radius-button-sm: 7px;
+	--radius-badge: 5px;
+	--radius-keycap: 6px;
+
+	/* shadows */
+	/* a tight, low-spread seat under the launcher: enough to read as floating over the
+	   blur + hairline without throwing a visible halo across the wallpaper. */
+	--shadow-panel:
+		0 8px 24px -8px rgba(0, 0, 0, 0.65),
+		inset 0 1px 0 rgba(255, 255, 255, 0.055);
+	--shadow-window: 0 40px 90px -24px rgba(0, 0, 0, 0.8);
+}
+
+@layer base {
+	* {
+		@apply border-border;
+	}
+
+	html,
+	body {
+		margin: 0;
+		height: 100%;
+		/* the document itself never scrolls: inner panes own their own scroll. without
+		   this the webview rubber-bands the whole window (titlebar included) on overscroll. */
+		overflow: hidden;
+		overscroll-behavior: none;
+	}
+
+	body {
+		@apply font-sans text-ink antialiased;
+		/* transparent so each window paints its own surface: the launcher renders a
+		   floating panel over a see-through window; settings paints an opaque body. */
+		background: transparent;
+	}
+
+	/* the brand spark, dialled down to a tint so selected text stays readable over the
+	   dark surfaces. applied globally so launcher and settings match. */
+	::selection {
+		background: rgba(255, 122, 69, 0.3);
+	}
+
+	/* slim, track-less scrollbars: the webview default paints a chunky light track that
+	   reads as a seam against the dark panel. show only the thumb, kept thin by insetting
+	   it behind a transparent border, and lift it on hover. background-color (not the
+	   shorthand) so the padding-box clip survives the hover restyle. */
+	::-webkit-scrollbar {
+		width: 10px;
+		height: 10px;
+	}
+	::-webkit-scrollbar-track,
+	::-webkit-scrollbar-corner {
+		background: transparent;
+	}
+	::-webkit-scrollbar-thumb {
+		background-color: rgba(255, 255, 255, 0.14);
+		background-clip: padding-box;
+		border: 3px solid transparent;
+		border-radius: 9999px;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background-color: rgba(255, 255, 255, 0.24);
+	}
+}
