@@ -61,3 +61,11 @@ The font files are licensed under the SIL Open Font License 1.1.
 
 The website serves these notices under `/licenses/` alongside its font assets.
 Dependency packages retain their own copyright and license notices.
+
+## Bootstrap Icons
+
+The website uses the Apple, Windows, and GitHub SVG marks from
+[Bootstrap Icons](https://icons.getbootstrap.com/). These website-only assets use
+the MIT license. The website serves the original notice at
+[`/licenses/bootstrap-icons-MIT.txt`](website/public/licenses/bootstrap-icons-MIT.txt).
+These icons are not part of the native app's installer resources.

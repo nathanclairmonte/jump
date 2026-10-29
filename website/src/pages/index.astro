@@ -2,12 +2,12 @@
 import "../styles/global.css";
 import { Picture } from "astro:assets";
 import launcher from "../assets/launcher.png";
-import Mark from "../components/Mark.astro";
+import BrandIcon from "../components/BrandIcon.astro";
 import DownloadLink from "../components/DownloadLink.astro";
-import { PLATFORMS, RELEASE_PAGE } from "../lib/download.mjs";
-const title = "Jump · Your next project. One shortcut away.";
+import { RELEASE_PAGE } from "../lib/download.mjs";
+const title = "Jump | Open projects in VS Code, Cursor, or Zed.";
 const description =
-  "A desktop launcher for your developer projects. Find a project, press Enter, and open it in VS Code, Cursor, or Zed. Built for macOS and Windows, including WSL2.";
+  "Open projects in VS Code, Cursor, or Zed. Type a project name and press Enter. Jump finds projects in your folders, including WSL.";
 const canonical = new URL("/", Astro.site);
 const faqs = [
   [
@@ -46,7 +46,7 @@ const faqs = [
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#12110f" />
+    <meta name="theme-color" content="#141210" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
@@ -63,7 +63,7 @@ const faqs = [
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="Jump. Your next project. One shortcut away."
+      content="Jump. Open projects in VS Code, Cursor, or Zed."
     />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
@@ -72,263 +72,100 @@ const faqs = [
       Skip to content
     </a>
     <header class="site-header wrap">
-      <a class="wordmark" href="/" aria-label="Jump home">
-        <span class="brand-mark">
-          <Mark />
-        </span>
-        jump
-      </a>
-      <nav aria-label="Main navigation">
-        <a class="nav-detail" href="#workflow">
-          How it works
-        </a>
-        <a class="nav-detail" href="#questions">
-          Questions
-        </a>
-        <a class="header-cta" href="#get-jump">
-          Get Jump <span aria-hidden="true">↓</span>
+      <nav aria-label="Site navigation">
+        <a
+          class="github-link"
+          href="https://github.com/nathanclairmonte/jump"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Source on GitHub (opens in a new tab)"
+          title="Source on GitHub"
+        >
+          <BrandIcon name="github" />
         </a>
       </nav>
     </header>
     <main id="main">
       <section class="hero wrap" aria-labelledby="hero-heading">
         <div class="hero-copy">
-          <p class="eyebrow">
-            <span class="status-dot"></span> Your projects, at your fingertips
+          <div class="brand">
+            <img src="/images/icon.png" width="68" height="68" alt="" />
+            <h1 id="hero-heading">Jump</h1>
+          </div>
+          <p class="lead">Open projects in VS Code, Cursor, or Zed.</p>
+          <p class="description">
+            Type a project name and press Enter. Jump finds projects in your
+            folders, including WSL.
           </p>
-          <h1 id="hero-heading">
-            Your next <br />
-            project.
-            <br />
-            <span>
-              One shortcut
-              <br class="desktop-break" /> away.
+          <div
+            class="shortcut"
+            role="img"
+            aria-label="Open Jump with Control, Alt, and Space"
+          >
+            <span class="shortcut-label">Open Jump with</span>
+            <span class="shortcut-keys" aria-hidden="true">
+              <kbd>Ctrl</kbd>
+              <kbd>Alt</kbd>
+              <kbd class="space-key">Space</kbd>
             </span>
-          </h1>
-          <p class="hero-description">
-            Type a name. Hit Enter. Get back to building.
-            <br class="wide-break" /> Jump opens your projects in the right
-            editor, straight from your keyboard.
-          </p>
+          </div>
           <div class="hero-actions">
             <DownloadLink platform="mac" />
             <DownloadLink platform="windows" secondary />
           </div>
-          <p class="requirements">
-            macOS on Apple Silicon <span aria-hidden="true">/</span> Windows x64
-            + WSL2
+          <p class="requirements">macOS 13+ on Apple Silicon. Windows x64.</p>
+          <p class="installation-link">
+            Unsigned builds.{" "}
+            <a href="#installation">Read the installation notes</a>.
           </p>
         </div>
         <figure class="hero-visual">
-          <div
-            class="shortcut"
-            role="img"
-            aria-label="Default shortcut Control Alt Space"
-          >
-            <span class="shortcut-line"></span>
-            <kbd>ctrl</kbd>
-            <kbd>alt</kbd>
-            <kbd class="space-key">space</kbd>
-            <span class="shortcut-line"></span>
-          </div>
           <div class="launcher-stage">
             <Picture
               src={launcher}
               formats={["avif", "webp"]}
               widths={[600, 900, 1200]}
-              sizes="(max-width: 700px) calc(100vw - 40px), (max-width: 1100px) 600px, 580px"
+              sizes="(max-width: 620px) min(500px, calc(100vw - 44px)), (max-width: 899px) calc((100vw - 92px) * 0.525), (max-width: 1176px) calc((100vw - 158px) * 0.525), 535px"
               loading="eager"
               fetchpriority="high"
-              alt="Jump's launcher with pinned projects studio-web, jump, and atlas-api above a list of recent projects."
+              alt="Jump showing pinned projects and recently opened projects"
             />
           </div>
-          <figcaption>
-            <span class="caption-dot"></span> A little window. A shorter path to
-            your work.
-          </figcaption>
         </figure>
       </section>
-      <div class="editor-strip wrap">
-        <p>Opens in the editor you already use</p>
-        <ul aria-label="Supported editors">
-          <li>
-            <span class="editor-glyph vscode" aria-hidden="true">
-              ⌁
-            </span>
-            VS Code
-          </li>
-          <li>
-            <span class="editor-glyph" aria-hidden="true">
-              ↖
-            </span>
-            Cursor
-          </li>
-          <li>
-            <span class="editor-glyph zed" aria-hidden="true">
-              Z
-            </span>
-            Zed
-          </li>
-        </ul>
-      </div>
-      <section
-        class="workflow wrap section"
-        id="workflow"
-        aria-labelledby="workflow-heading"
-      >
-        <div class="section-heading">
-          <p class="eyebrow">Less finding. More doing.</p>
-          <h2 id="workflow-heading">
-            You know the project.
-            <br />
-            Jump knows the way.
-          </h2>
+      <section class="information wrap" id="why" aria-labelledby="why-heading">
+        <h2 id="why-heading">Why I built Jump</h2>
+        <div class="information-content">
           <p>
-            Skip the folder hunt and the editor's recent list.
-            <br class="wide-break" /> One shortcut brings your projects
-            together.
+            I built Jump because older projects kept falling out of VS Code's
+            recent-project list on Windows. I couldn't search it, and every pin
+            left less room for recents. I wanted a searchable list that also
+            opened my WSL projects in VS Code's WSL mode.
+          </p>
+          <p>
+            When I moved to Mac, I kept using Jump. One shortcut opens my
+            projects directly, with pins and recents in the same place. From
+            there, I can open a project on GitHub or copy its path.
           </p>
         </div>
-        <ol class="steps">
-          <li>
-            <span class="step-number">01</span>
-            <div class="step-visual">
-              <kbd>ctrl</kbd>
-              <span>+</span>
-              <kbd>alt</kbd>
-              <span>+</span>
-              <kbd>space</kbd>
-            </div>
-            <h3>Call it up.</h3>
-            <p>
-              Open Jump from anywhere with a global shortcut. It waits in your
-              menu bar or system tray.
-            </p>
-          </li>
-          <li>
-            <span class="step-number">02</span>
-            <div class="step-visual search-example">
-              <span aria-hidden="true">⌕</span>
-              <span>
-                atlas<span class="text-caret" aria-hidden="true"></span>
-              </span>
-            </div>
-            <h3>Find your project.</h3>
-            <p>
-              Type part of a name or an alias. Pin your regulars, or pick up a
-              recent project.
-            </p>
-          </li>
-          <li>
-            <span class="step-number">03</span>
-            <div class="step-visual">
-              <kbd class="enter-key">↵</kbd>
-              <span class="visual-label">open in your editor</span>
-            </div>
-            <h3>Get into it.</h3>
-            <p>
-              Press Enter to open it. Keep a default editor, or give each
-              project its own.
-            </p>
-          </li>
-        </ol>
-      </section>
-      <section class="details-section" aria-labelledby="details-heading">
-        <div class="wrap details-grid">
-          <div>
-            <p class="eyebrow">For the way you actually work</p>
-            <h2 id="details-heading">
-              A home for your <br />
-              side projects.
-              <br />
-              <span>And your day job.</span>
-            </h2>
-            <p class="section-description">
-              The repo you open every morning. The experiment you come back to
-              on weekends. Keep them all one search away.
-            </p>
-          </div>
-          <div class="detail-list">
-            <article>
-              <span class="detail-icon" aria-hidden="true">
-                ✳
-              </span>
-              <div>
-                <h3>Your regulars, right there.</h3>
-                <p>
-                  Pin projects and arrange them your way. Add a colour, alias,
-                  or tags to make them easier to find.
-                </p>
-              </div>
-            </article>
-            <article>
-              <span class="detail-icon" aria-hidden="true">
-                ⌘
-              </span>
-              <div>
-                <h3>More than an open button.</h3>
-                <p>
-                  Copy a path, open a GitHub repository, or reveal a folder.
-                  Press Tab to get to project actions.
-                </p>
-              </div>
-            </article>
-            <article>
-              <span class="detail-icon" aria-hidden="true">
-                ~/
-              </span>
-              <div>
-                <h3>Windows and WSL, together.</h3>
-                <p>
-                  Find projects on your Windows drive and in WSL2 distributions
-                  from the same launcher.
-                </p>
-              </div>
-            </article>
-            <article>
-              <span class="detail-icon" aria-hidden="true">
-                ⌂
-              </span>
-              <div>
-                <h3>Local projects. Local data.</h3>
-                <p>
-                  Choose which folders Jump scans. Your index and settings stay
-                  on your computer. No account required.
-                </p>
-              </div>
-            </article>
-          </div>
-        </div>
       </section>
       <section
-        class="get-section wrap section"
-        id="get-jump"
-        aria-labelledby="get-heading"
+        class="information wrap"
+        id="installation"
+        aria-labelledby="installation-heading"
       >
-        <div class="section-heading">
-          <p class="eyebrow">Make room for the work</p>
-          <h2 id="get-heading">Your next project is waiting.</h2>
-          <p>Give it a shortcut.</p>
-        </div>
-        <p class="availability" id="availability">
-          If your download did not start, the installer may be unavailable or
-          GitHub may be temporarily unreachable. Try again later or{" "}
-          <a href={RELEASE_PAGE}>check the releases on GitHub</a>.
-        </p>
-        <div class="install-grid">
+        <h2 id="installation-heading">Installation</h2>
+        <div class="information-content">
+          <p class="availability" id="availability">
+            If your download did not start, the installer may be unavailable or
+            GitHub may be temporarily unreachable. Try again later or{" "}
+            <a href={RELEASE_PAGE}>check the releases on GitHub</a>.
+          </p>
           <article id="install-mac">
-            <div class="install-title">
-              <span class="platform-symbol" aria-hidden="true">
-                ⌘
-              </span>
-              <div>
-                <h3>Jump for macOS</h3>
-                <p>{PLATFORMS.mac.requirement}</p>
-              </div>
-            </div>
-            <DownloadLink platform="mac" />
-            <p class="install-note">
-              The current app is unsigned and unnotarized.
+            <h3>macOS</h3>
+            <p>
+              Requires macOS 13 or later on Apple Silicon. The current app is
+              unsigned and unnotarized.
             </p>
             <details>
               <summary>
@@ -349,18 +186,10 @@ const faqs = [
             </details>
           </article>
           <article id="install-windows">
-            <div class="install-title">
-              <span class="platform-symbol windows-symbol" aria-hidden="true">
-                ⊞
-              </span>
-              <div>
-                <h3>Jump for Windows</h3>
-                <p>{PLATFORMS.windows.requirement}</p>
-              </div>
-            </div>
-            <DownloadLink platform="windows" secondary />
-            <p class="install-note">
-              A desktop app for native and WSL projects.
+            <h3>Windows</h3>
+            <p>
+              Requires Windows x64. Use WSL2 to add projects from a Linux
+              distribution.
             </p>
             <details>
               <summary>
@@ -373,8 +202,7 @@ const faqs = [
                 </p>
                 <p>
                   The installer is unsigned, so Windows may show a SmartScreen
-                  warning. Use WSL2 if you want to add projects from a Linux
-                  distribution.
+                  warning.
                 </p>
               </div>
             </details>
@@ -382,14 +210,11 @@ const faqs = [
         </div>
       </section>
       <section
-        class="faq wrap section"
+        class="faq information wrap"
         id="questions"
         aria-labelledby="faq-heading"
       >
-        <div>
-          <p class="eyebrow">A few more things</p>
-          <h2 id="faq-heading">Good questions.</h2>
-        </div>
+        <h2 id="faq-heading">Questions</h2>
         <div class="faq-list">
           {faqs.map(([question, answer]) => (
             <details>
@@ -404,20 +229,12 @@ const faqs = [
       </section>
     </main>
     <footer class="site-footer wrap">
-      <a class="wordmark" href="/" aria-label="Jump home">
-        <span class="brand-mark">
-          <Mark />
-        </span>
-        jump
-      </a>
       <p>
-        A project launcher by <a href="https://n4than.com">Nathan Clairmonte</a>
-        .
+        Free and open source.{" "}
+        <a href="https://github.com/nathanclairmonte/jump/blob/main/LICENSE">
+          MIT licensed.
+        </a>
       </p>
-      <a href="https://github.com/nathanclairmonte/jump">Source code</a>
-      <a href="#main">
-        Back to top <span aria-hidden="true">↑</span>
-      </a>
     </footer>
   </body>
 </html>

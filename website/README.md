@@ -2,6 +2,8 @@
 
 A static Astro landing page with two on-demand download routes for Vercel. The website owns its npm dependencies and does not import the desktop app.
 
+The page pairs direct project-launcher copy with the real app screenshot. Installation notes and questions use native disclosures. Downloads and installation instructions work without JavaScript.
+
 ## Develop
 
 Use Node 22.12 or later. From the repository root:
@@ -84,6 +86,12 @@ npm run capture --prefix website -- social
 Use the same optional Playwright setup as browser verification. The launcher capture uses the app's real UI with its seeded demo data. The demo source uses neutral project names and paths. The script hides development controls and captures the panel at twice its display resolution. It does not change app source or user data. `APP_URL` overrides the default launcher URL.
 
 `src/assets/launcher.png` is the captured panel. Astro creates responsive AVIF and WebP images. `scripts/social.html` is the reproducible source for `public/images/social.png`. `public/images/icon.png` comes from the app's existing icon. The site uses local Geist and Geist Mono font files.
+
+## Asset licenses
+
+The website uses self-hosted Geist and Geist Mono fonts under the SIL Open Font License 1.1. The Apple, Windows, and GitHub marks come from Bootstrap Icons under the MIT license. `BrandIcon.astro` owns the three SVG geometries and their decorative accessibility attributes.
+
+The original notices are in `public/licenses/` and linked from the root `THIRD_PARTY_NOTICES.md`. The Bootstrap icons are website-only assets. They do not change the native installer resource map.
 
 ## Dependency overrides
 
