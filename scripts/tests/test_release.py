@@ -644,6 +644,20 @@ sys.stdout.buffer.write(base64.b64decode(sys.stdin.buffer.read()))
             self.assertNotEqual(result.returncode, 0)
             self.assertEqual(sentinel.read_bytes(), b"keep")
 
+    def test_cleanup_refuses_a_valid_name_symlink_to_an_outside_directory(self):
+        with tempfile.TemporaryDirectory() as outside:
+            certificate = Path(outside) / "certificate.p12"
+            certificate.write_bytes(b"keep certificate")
+            keychain = Path(outside) / "signing.keychain-db"
+            keychain.write_bytes(b"keep keychain")
+            signing_directory = self.root / "jump-signing.fake"
+            signing_directory.symlink_to(outside, target_is_directory=True)
+            result = self.execute("cleanup-signing.sh", {**self.env, "JUMP_SIGNING_DIR": str(signing_directory)})
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(certificate.read_bytes(), b"keep certificate")
+            self.assertEqual(keychain.read_bytes(), b"keep keychain")
+            self.assertTrue(signing_directory.is_symlink())
+
 
 if __name__ == "__main__":
     unittest.main()

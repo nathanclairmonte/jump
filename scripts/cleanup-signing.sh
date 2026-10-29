@@ -3,10 +3,10 @@ set -eu
 
 : "${RUNNER_TEMP:?Run this on a temporary CI runner}"
 if [ -n "${JUMP_SIGNING_DIR:-}" ]; then
-    [ "$(dirname "$JUMP_SIGNING_DIR")" = "$RUNNER_TEMP" ] && [ ! -L "$JUMP_SIGNING_DIR" ] || {
+    if [ "$(dirname "$JUMP_SIGNING_DIR")" != "$RUNNER_TEMP" ] || [ -L "$JUMP_SIGNING_DIR" ]; then
         echo 'Signing cleanup path is outside the job directory' >&2
         exit 1
-    }
+    fi
     case "$JUMP_SIGNING_DIR" in
         "$RUNNER_TEMP"/jump-signing.*) ;;
         *) echo 'Signing cleanup path is outside the job directory' >&2; exit 1 ;;

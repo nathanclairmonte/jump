@@ -42,7 +42,7 @@ The final verifier passed twice, including after the cleanup fix. It checked the
 
 The local artifact is `/tmp/jump-0.1.4-notarized-20261029/Jump_0.1.4_aarch64.dmg`. Its SHA-256 is `6277480f0e6314116f486aea7c51fb811fd38eb511544d543bb1eefb7939c5d8`. It is a pre-release verification build from the working tree, not a published release candidate. Its recorded source SHA names the base commit from before the implementation commits. Do not stage these local bytes as a release; rebuild from the final reviewed commit.
 
-The frontend suite passed 97 tests, the native core suite passed 117 tests, and Biome passed. All 34 release safety tests, actionlint, and ShellCheck passed. Early standalone signing attempts returned `errSecInternalComponent`; local signing succeeded after Keychain access approval. No signing bypass was added.
+The frontend suite passed 97 tests, the native core suite passed 117 tests, and Biome passed. All 35 release safety tests, actionlint, and ShellCheck passed. The PR CI follow-up replaced a cleanup guard that triggered ShellCheck SC2015 with an explicit conditional. The fixed scripts pass ShellCheck 0.9.0 and 0.11.0, and a symlink test confirms that outside files remain protected. Early standalone signing attempts returned `errSecInternalComponent`; local signing succeeded after Keychain access approval. No signing bypass was added.
 
 ## Remaining steps
 
