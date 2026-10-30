@@ -4,6 +4,7 @@ import {
 	menuRows,
 	rootMenuGroups,
 	submenuRows,
+	submenuTitle,
 } from "./action-menu";
 import type { Candidate } from "./join";
 
@@ -101,6 +102,64 @@ describe("rootMenuGroups conditional items", () => {
 			)?.label;
 		expect(label("windows")).toBe("Show in File Explorer");
 		expect(label("macos")).toBe("Show in Finder");
+	});
+});
+
+describe("hotkeys", () => {
+	const hotkeyOf = (c: Candidate, kind: string) =>
+		menuRows(c, "root", "macos").find((r) => r.kind === kind)?.hotkey;
+	const full = candidate({
+		githubUrl: "https://github.com/me/proj",
+		lastOpenedAt: 123,
+		editorOverride: "cursor",
+	});
+
+	it("binds the extras and recents rows to their letters", () => {
+		expect(hotkeyOf(full, "copyPath")).toBe("c");
+		expect(hotkeyOf(full, "showInExplorer")).toBe("f");
+		expect(hotkeyOf(full, "openGithub")).toBe("g");
+		expect(hotkeyOf(full, "removeRecent")).toBe("r");
+	});
+
+	it("pin is P when unpinned and U when pinned", () => {
+		expect(hotkeyOf(candidate(), "pin")).toBe("p");
+		expect(hotkeyOf(candidate({ pinned: true }), "pin")).toBe("u");
+	});
+
+	it("Open has no letter hotkey", () => {
+		expect(hotkeyOf(full, "open")).toBeUndefined();
+	});
+
+	it("no two root rows share a hotkey", () => {
+		for (const pinned of [false, true]) {
+			const keys = menuRows({ ...full, pinned }, "root", "macos")
+				.map((r) => r.hotkey)
+				.filter((k) => k !== undefined);
+			expect(new Set(keys).size).toBe(keys.length);
+		}
+	});
+});
+
+describe("Remove from Recents confirmation", () => {
+	it("the root row opens the confirm level", () => {
+		const row = menuRows(
+			candidate({ lastOpenedAt: 123 }),
+			"root",
+			"macos",
+		).find((r) => r.kind === "removeRecent");
+		expect(row?.opensSubmenu).toBe("confirmRemoveRecent");
+	});
+
+	it("offers a danger Remove with the enter chip, then Cancel, and no hotkeys", () => {
+		const rows = submenuRows(candidate(), "confirmRemoveRecent");
+		expect(rows.map((r) => r.kind)).toEqual(["confirmRemoveRecent", "cancel"]);
+		expect(rows[0].danger).toBe(true);
+		expect(rows[0].enterChip).toBe(true);
+		expect(rows.every((r) => r.hotkey === undefined)).toBe(true);
+	});
+
+	it("titles the confirm level as a question", () => {
+		expect(submenuTitle("confirmRemoveRecent")).toBe("Remove from Recents?");
 	});
 });
 
