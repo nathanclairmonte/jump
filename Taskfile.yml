@@ -26,6 +26,7 @@ tasks:
       - bun pm version {{.CLI_ARGS | default "patch"}} --no-git-tag-version
 
   tauri:dev:
+    aliases: [dev]
     desc: Run the full Tauri dev loop (hot-reload frontend + rust shell)
     # run on native macOS or Windows; WSL interop breaks the dev server and file watching.
     cmds:
