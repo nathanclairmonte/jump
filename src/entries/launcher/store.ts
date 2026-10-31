@@ -69,6 +69,8 @@ interface LauncherState {
 	drillInActionItem: () => void;
 	actionMenuBack: () => void;
 	enterActionItem: () => void;
+	// activates the current level's row bound to `key`; false when no row claims it.
+	pressActionHotkey: (key: string) => boolean;
 	// mouse: highlight then activate in one go.
 	activateActionIndex: (index: number) => void;
 }
@@ -416,10 +418,16 @@ export const useLauncherStore = create<LauncherState>((set, get) => {
 				return;
 			}
 
+			// cancel steps back to root instead of closing, landing on Remove from Recents
+			if (row.kind === "cancel") {
+				get().actionMenuBack();
+				return;
+			}
+
 			const id = c.id;
 			const editor = row.editor ?? null;
 			const color = row.color ?? null;
-			// every leaf action closes the menu; the only non-closing path (a submenu opener)
+			// every leaf action closes the menu; the non-closing paths (a submenu opener, cancel)
 			// already returned above.
 			set({ actionMenu: null });
 			switch (row.kind) {
@@ -455,7 +463,7 @@ export const useLauncherStore = create<LauncherState>((set, get) => {
 						api.setProjectExcluded(id, true),
 					);
 					break;
-				case "removeRecent": {
+				case "confirmRemoveRecent": {
 					const cur = get().settings;
 					if (cur) {
 						set({
@@ -483,6 +491,20 @@ export const useLauncherStore = create<LauncherState>((set, get) => {
 				default:
 					break;
 			}
+		},
+
+		pressActionHotkey(key) {
+			const { actionMenu, candidates } = get();
+			if (!actionMenu) return false;
+			const c = candidates.find((x) => x.id === actionMenu.id);
+			if (!c) return false;
+			const target = key.toLowerCase();
+			const index = rowsFor(c, actionMenu.level).findIndex(
+				(r) => r.hotkey === target,
+			);
+			if (index < 0) return false;
+			get().activateActionIndex(index);
+			return true;
 		},
 
 		activateActionIndex(index) {

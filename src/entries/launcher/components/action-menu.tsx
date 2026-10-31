@@ -182,15 +182,21 @@ function MenuItem({ row, selected, onHover, onActivate }: MenuItemProps) {
 }
 
 // the right-edge affordance per row kind: ↵ chip (Open), › chevron (submenu opener), star
-// (pin/unpin), or a check (the applied submenu choice).
+// (pin/unpin), or a check (the applied submenu choice), led by the row's hotkey chip.
 function MenuItemTrailing({ row }: { row: MenuRow }) {
-	if (row.enterChip) {
-		return (
-			<span className="rounded-[5px] bg-white/8 px-1.5 py-0.5 font-mono text-[10.5px] text-[#cfcdc8]">
-				↵
-			</span>
-		);
-	}
+	const affordance = rowAffordance(row);
+	if (!row.hotkey) return affordance;
+	return (
+		<span className="flex flex-none items-center gap-1.5">
+			<KeyChip>{row.hotkey.toUpperCase()}</KeyChip>
+			{/* a fixed icon slot, even when empty, keeps every hotkey chip in one column */}
+			<span className="flex w-3.5 justify-center">{affordance}</span>
+		</span>
+	);
+}
+
+function rowAffordance(row: MenuRow) {
+	if (row.enterChip) return <KeyChip>↵</KeyChip>;
 	if (row.opensSubmenu) {
 		return <ChevronRight size={14} className="text-ink-faint" />;
 	}
@@ -210,6 +216,14 @@ function MenuItemTrailing({ row }: { row: MenuRow }) {
 		return <Check size={13} strokeWidth={2.5} className="text-accent-soft" />;
 	}
 	return null;
+}
+
+function KeyChip({ children }: { children: string }) {
+	return (
+		<span className="rounded-[5px] bg-white/8 px-1.5 py-0.5 font-mono text-[10.5px] text-[#cfcdc8]">
+			{children}
+		</span>
+	);
 }
 
 // a small swatch for the Set Color submenu: the preset tint, or a hollow ring for Unset.

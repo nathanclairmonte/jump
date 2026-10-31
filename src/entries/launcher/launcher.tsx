@@ -69,6 +69,7 @@ export function Launcher() {
 	const setActionIndex = useLauncherStore((s) => s.setActionIndex);
 	const drillInActionItem = useLauncherStore((s) => s.drillInActionItem);
 	const actionMenuBack = useLauncherStore((s) => s.actionMenuBack);
+	const pressActionHotkey = useLauncherStore((s) => s.pressActionHotkey);
 	const enterActionItem = useLauncherStore((s) => s.enterActionItem);
 	const activateActionIndex = useLauncherStore((s) => s.activateActionIndex);
 
@@ -284,6 +285,15 @@ export function Launcher() {
 					closeActionMenu();
 					break;
 				default:
+					if (
+						!event.metaKey &&
+						!event.ctrlKey &&
+						!event.altKey &&
+						event.key.length === 1 &&
+						pressActionHotkey(event.key)
+					) {
+						event.preventDefault();
+					}
 					break;
 			}
 			return;

@@ -13,8 +13,14 @@ import { editorLabel } from "@/lib/editors";
 import { showInFileManagerLabel } from "@/lib/platform-labels";
 import type { Candidate } from "./join";
 
-// the menu's drill levels: the root list plus the three submenus.
-export type MenuLevel = "root" | "openWith" | "editor" | "color";
+// the menu's drill levels: the root list, the three submenus, and the Remove from Recents
+// confirmation, which reuses the submenu drill so back/Esc land on the row that opened it.
+export type MenuLevel =
+	| "root"
+	| "openWith"
+	| "editor"
+	| "color"
+	| "confirmRemoveRecent";
 
 // every selectable kind. submenu *openers* (openWith/setEditor/setColor) carry `opensSubmenu`;
 // submenu *leaves* (pickOpenWith/pickEditor/pickColor) carry the chosen value.
@@ -32,7 +38,9 @@ export type ActionKind =
 	| "exclude"
 	| "pickOpenWith"
 	| "pickEditor"
-	| "pickColor";
+	| "pickColor"
+	| "confirmRemoveRecent"
+	| "cancel";
 
 export interface MenuRow {
 	kind: ActionKind;
@@ -46,6 +54,8 @@ export interface MenuRow {
 	pinned?: boolean;
 	// a root opener drills into this submenu on activate.
 	opensSubmenu?: MenuLevel;
+	// lowercase single-key shortcut that activates this row within its level.
+	hotkey?: string;
 	// submenu-leaf payloads.
 	editor?: EditorKind;
 	color?: ProjectColor | null;
@@ -66,7 +76,9 @@ export const COLOR_OPTIONS: { label: string; value: ProjectColor | null }[] = [
  * The root menu as dividered groups (launch / metadata / extras / danger). Conditional items
  * appear only when applicable: Clear Override when an override exists, Open in GitHub when a
  * GitHub remote was resolved, Remove from Recents when the project is in recents (keyed on
- * recents membership, not which section it is displayed in).
+ * recents membership, not which section it is displayed in). Rows carry their letter hotkey
+ * here so rendering and key dispatch share one registry; Remove from Recents drills into a
+ * confirmation rather than acting.
  */
 export function rootMenuGroups(c: Candidate, platform: Platform): MenuRow[][] {
 	return [
@@ -80,6 +92,7 @@ export function rootMenuGroups(c: Candidate, platform: Platform): MenuRow[][] {
 				label: c.pinned ? "Unpin" : "Pin",
 				star: true,
 				pinned: c.pinned,
+				hotkey: c.pinned ? "u" : "p",
 			},
 			{
 				kind: "setEditor",
@@ -92,13 +105,30 @@ export function rootMenuGroups(c: Candidate, platform: Platform): MenuRow[][] {
 			{ kind: "setColor", label: "Set Color…", opensSubmenu: "color" },
 		],
 		[
-			{ kind: "copyPath", label: "Copy path" },
+			{ kind: "copyPath", label: "Copy path", hotkey: "c" },
 			...(c.githubUrl
-				? [{ kind: "openGithub", label: "Open in GitHub" } as MenuRow]
+				? [
+						{
+							kind: "openGithub",
+							label: "Open in GitHub",
+							hotkey: "g",
+						} as MenuRow,
+					]
 				: []),
-			{ kind: "showInExplorer", label: showInFileManagerLabel(platform) },
+			{
+				kind: "showInExplorer",
+				label: showInFileManagerLabel(platform),
+				hotkey: "f",
+			},
 			...(c.lastOpenedAt != null
-				? [{ kind: "removeRecent", label: "Remove from Recents" } as MenuRow]
+				? [
+						{
+							kind: "removeRecent",
+							label: "Remove from Recents",
+							hotkey: "r",
+							opensSubmenu: "confirmRemoveRecent",
+						} as MenuRow,
+					]
 				: []),
 		],
 		[{ kind: "exclude", label: "Exclude from Search", danger: true }],
@@ -128,6 +158,17 @@ export function submenuRows(c: Candidate, level: MenuLevel): MenuRow[] {
 				color: o.value,
 				current: c.color === o.value,
 			}));
+		// no hotkeys here, so a repeated R can't confirm by accident
+		case "confirmRemoveRecent":
+			return [
+				{
+					kind: "confirmRemoveRecent",
+					label: "Remove",
+					danger: true,
+					enterChip: true,
+				},
+				{ kind: "cancel", label: "Cancel" },
+			];
 		default:
 			return [];
 	}
@@ -153,6 +194,8 @@ export function submenuTitle(level: MenuLevel): string {
 			return "Set Editor Override";
 		case "color":
 			return "Set Color";
+		case "confirmRemoveRecent":
+			return "Remove from Recents?";
 		default:
 			return "";
 	}
