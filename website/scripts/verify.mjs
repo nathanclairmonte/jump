@@ -59,9 +59,24 @@ try {
       await page.locator("#install-mac details").getAttribute("open"),
       "",
     );
-    assert.equal(
-      await page.locator("pre code").innerText(),
-      "xattr -cr /Applications/Jump.app",
+    const macInstallation = await page.locator("#install-mac").innerText();
+    assert.match(
+      macInstallation,
+      /Requires macOS 13 or later on Apple Silicon\./,
+    );
+    assert.match(macInstallation, /signed and notarized\./);
+    assert.match(
+      macInstallation,
+      /Open the DMG\.\s*Drag Jump into Applications\.\s*Open Jump from Applications\./,
+    );
+    assert.doesNotMatch(
+      macInstallation,
+      /xattr|quarantine|damaged|unsigned|unnotarized/i,
+    );
+    await page.locator("#install-windows summary").click();
+    assert.match(
+      await page.locator("#install-windows").innerText(),
+      /installer is unsigned, so Windows may show a SmartScreen\s+warning\./,
     );
     await page
       .locator("summary")

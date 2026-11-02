@@ -115,7 +115,6 @@ const faqs = [
           </div>
           <p class="requirements">macOS 13+ on Apple Silicon. Windows x64.</p>
           <p class="installation-link">
-            Unsigned builds.{" "}
             <a href="#installation">Read the installation notes</a>.
           </p>
         </div>
@@ -165,7 +164,7 @@ const faqs = [
             <h3>macOS</h3>
             <p>
               Requires macOS 13 or later on Apple Silicon. The current app is
-              unsigned and unnotarized.
+              signed and notarized.
             </p>
             <details>
               <summary>
@@ -173,15 +172,10 @@ const faqs = [
               </summary>
               <div class="install-instructions">
                 <ol>
-                  <li>Open the DMG and drag Jump into Applications.</li>
-                  <li>Run this command in Terminal before opening Jump.</li>
+                  <li>Open the DMG.</li>
+                  <li>Drag Jump into Applications.</li>
+                  <li>Open Jump from Applications.</li>
                 </ol>
-                <pre><code>xattr -cr /Applications/Jump.app</code></pre>
-                <p>
-                  This clears quarantine for the unsigned app. Repeat after each
-                  new download. Without this step, macOS may say the app is
-                  damaged.
-                </p>
               </div>
             </details>
           </article>
