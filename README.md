@@ -15,19 +15,13 @@ Third-party code and fonts retain their own licenses. See
 
 ## Install on macOS
 
-The macOS release supports Apple Silicon and requires macOS 13 or later. It is unsigned
-and unnotarized.
+The macOS release supports Apple Silicon and requires macOS 13 or later. It is signed
+and notarized.
 
 1. Download the `.dmg` from the [latest release](https://github.com/nathanclairmonte/jump/releases/latest).
-2. Open it and drag Jump into Applications.
-3. Clear the quarantine flag in Terminal:
-
-```sh
-xattr -cr /Applications/Jump.app
-```
-
-macOS may otherwise say that the app is damaged. Run the command again after each new
-download because macOS applies quarantine to each copy.
+2. Open the DMG.
+3. Drag Jump into Applications.
+4. Open Jump from Applications.
 
 ## Install on Windows
 
@@ -59,7 +53,6 @@ bun install         # install dependencies
 task tauri:dev      # run the native development app
 task build:mac      # build the macOS DMG on macOS
 task build:win      # build the NSIS installer on Windows
-task mac:unq        # clear quarantine on /Applications/Jump.app
 
 task check          # biome check (lint + format + import sort)
 task format         # biome format --write
